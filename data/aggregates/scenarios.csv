@@ -1,0 +1,5 @@
+scenario,cases,default_rate,defend_rate,mutual_awareness,note
+base,25351,61.0,2.1,25.2,"platform fixed cooperation"
+unseal,20247,25.6,9.1,81.2,"sealing removed"
+platform_scope,22211,61.9,2.3,24.6,"platform narrows freeze scope (adaptive)"
+both,15295,23.8,10.8,73.4,"sealing removed + platform scope"

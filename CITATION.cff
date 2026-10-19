@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use this repository, please cite the accompanying paper and this replication package."
+title: "SAD Litigation Research Replication Package"
+abstract: "Code, aggregated data, synthetic simulation outputs, and visualization for an empirical and agent-based study of U.S. Schedule A Defendants (SAD) intellectual-property litigation."
+authors:
+  - name: "SAD Research Project"
+version: 1.0.0
+date-released: 2026-10-19
+license: MIT
+repository-code: "https://github.com/your-org/sad-research"
+keywords:
+  - Schedule A
+  - SAD litigation
+  - mass IP litigation
+  - agent-based modeling
+  - e-commerce
+  - intellectual property
+  - China

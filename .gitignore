@@ -1,0 +1,18 @@
+# secrets
+.env
+.env.*
+*.key
+*.pem
+config.json
+
+# raw data (never commit)
+data/raw/
+raw/
+*.jsonl
+
+# local artifacts
+__pycache__/
+*.pyc
+.DS_Store
+*.log
+.mimosa/

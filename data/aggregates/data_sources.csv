@@ -1,0 +1,6 @@
+source,period,n,fields,role,limitation
+CourtListener quarterly bulk dockets,2013-2025.4,7696,"case name; docket number; court; filing/termination dates; nature of suit; judge","SAD universe, trend, court concentration, cause, duration","RECAP coverage incomplete; lower bound; no party/attorney fields"
+sellerdefense industry index,2020-2026,11555,"filing date; case number; state; law firm; brand; outcome note","China-seller identification; law firm and brand structure","industry index, not official; about 19% non-SAD"
+CourtListener REST API sample,2013-2026,4304,"parties; attorneys; law firms; dates","defendant count; duration; attorney scale","partial sample; not a census"
+zhichancha U.S. document database,2020-2026,2169,"title; court; parties; full text","latest cases; procedural detail","commercial database; title-based SAD filter"
+zhichancha full docket reports,2020-2026,170,"complaint; Schedule A; TRO; sealing; default judgment","procedural timeline and case detail","stratified sample, not representative"

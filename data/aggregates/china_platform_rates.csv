@@ -1,0 +1,6 @@
+cohort,denominator,platform_cases,share_pct,note
+被告名称含网店,869,184,21.2,"any of nine platforms; name-based proxy"
+侵害作品发行权-拼多多,26153,5048,19.3,"Shanghai Xunmeng as defendant"
+侵害作品发行权-淘宝,26153,161,0.6,"Zhejiang Taobao Network as defendant"
+侵害作品发行权-京东,26153,269,1.0,"Beijing JD Sanbailiushidu as defendant"
+侵害作品发行权-三家合计,26153,5478,20.9,"undeduplicated; may overlap"

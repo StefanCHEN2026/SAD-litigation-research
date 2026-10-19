@@ -1,0 +1,6 @@
+sample,n,withdrawal_pct,partial_support_pct,dismissal_pct,damages_note
+网店·平台不在案,685,65.8,24.5,0.4,"93% of 202 cases with damages <= CNY 50,000"
+网店·平台在案,184,82.6,10.3,0.0,
+发行权（案由）,26153,54.2,28.5,0.4,"includes offline sales"
+平台在案（拼多多）,49085,82.0,6.7,0.2,"Shanghai Xunmeng as defendant"
+美国SAD（Goldman）,2688,28.0,2.0,0.0,"28% voluntary/joint dismissal; 70% default; USD 150k per defendant"

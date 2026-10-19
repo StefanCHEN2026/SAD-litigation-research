@@ -1,0 +1,5 @@
+scenario,cases,default_rate,defend_rate,mutual_awareness
+base,25511,70.9,2.1,25.2
+unseal,20247,25.7,8.3,81.2
+platform_scope,22622,71.4,2.3,24.7
+both,15295,24.9,10.5,73.4

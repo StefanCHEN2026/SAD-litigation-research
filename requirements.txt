@@ -1,0 +1,3 @@
+# Core ABM and validation scripts use only the Python standard library.
+# The optional LLM appendix scripts (not included in this release) require requests.
+requests>=2.31

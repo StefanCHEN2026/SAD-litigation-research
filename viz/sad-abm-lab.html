@@ -1,0 +1,290 @@
+<div id="sad-abm-lab" style="color: var(--foreground); font-family: inherit;">
+  <div class="viz-row" style="justify-content: space-between; align-items: baseline; gap: 12px;">
+    <h2 style="margin: 0;">SAD 多主体模拟</h2>
+    <div class="viz-row" id="sad-scen" style="gap: 6px;">
+      <button type="button" class="btn" data-s="base" aria-pressed="true">基准</button>
+      <button type="button" class="btn" data-s="unseal">取消密封</button>
+      <button type="button" class="btn" data-s="resist">平台抵抗</button>
+      <button type="button" class="btn" data-s="both">两者叠加</button>
+    </div>
+  </div>
+
+  <div class="viz-grid" style="margin-top: 12px; gap: 10px;" aria-live="polite">
+    <div class="card viz-stat" style="padding: 10px 12px;">
+      <div class="text-small text-muted">当年立案</div>
+      <div class="viz-stat-value tabular-nums" id="sad-cases">—</div>
+    </div>
+    <div class="card viz-stat" style="padding: 10px 12px;">
+      <div class="text-small text-muted">默认判决率</div>
+      <div class="viz-stat-value tabular-nums" id="sad-def">—</div>
+    </div>
+    <div class="card viz-stat" style="padding: 10px 12px;">
+      <div class="text-small text-muted">有效协调率</div>
+      <div class="viz-stat-value tabular-nums" id="sad-coord">—</div>
+    </div>
+    <div class="card viz-stat" style="padding: 10px 12px;">
+      <div class="text-small text-muted">11 年累计</div>
+      <div class="viz-stat-value tabular-nums" id="sad-total">—</div>
+    </div>
+  </div>
+
+  <div style="margin-top: 14px;">
+    <div class="viz-row" style="justify-content: space-between; align-items: baseline;">
+      <div class="text-small text-muted">年度立案数（虚线为基准情景）</div>
+      <div class="text-small text-muted"><span id="sad-year-label" class="tabular-nums">2025</span></div>
+    </div>
+    <div id="sad-chart-cases"></div>
+    <input type="range" class="form-range" id="sad-year" min="0" max="10" step="1" value="5" aria-label="选择年份">
+  </div>
+
+  <div class="viz-grid" style="margin-top: 18px; gap: 18px;">
+    <div>
+      <div class="text-small text-muted">默认率与有效协调率</div>
+      <div id="sad-chart-rates"></div>
+    </div>
+    <div>
+      <div class="viz-row" style="justify-content: space-between; align-items: baseline;">
+        <div class="text-small text-muted">2025 年卖家快照</div>
+        <div class="viz-row" style="gap: 4px;">
+          <button type="button" class="btn" id="sad-grid-seal" aria-pressed="true">密封</button>
+          <button type="button" class="btn" id="sad-grid-unseal" aria-pressed="false">取消密封</button>
+        </div>
+      </div>
+      <canvas id="sad-grid" style="width: 100%; height: 260px; display: block; margin-top: 6px;" role="img" aria-label="卖家状态快照：灰点为未被诉，橙点为被诉后和解或缺席，绿点为应诉；取消密封时被诉卖家之间出现连线"></canvas>
+      <div class="viz-row" style="gap: 14px; margin-top: 6px;">
+        <span class="text-small text-muted"><span style="display:inline-block;width:8px;height:8px;background:var(--muted);border-radius:50%;margin-right:5px;"></span>未被诉</span>
+        <span class="text-small text-muted"><span style="display:inline-block;width:8px;height:8px;background:var(--viz-series-1);border-radius:50%;margin-right:5px;"></span>被诉·和解或缺席</span>
+        <span class="text-small text-muted"><span style="display:inline-block;width:8px;height:8px;background:var(--viz-series-2);border-radius:50%;margin-right:5px;"></span>被诉·应诉</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script>
+  (function () {
+    var root = document.getElementById('sad-abm-lab');
+    if (!root) return;
+
+    var DATA = {"base":{"label":"基准","cases":[667,900,1215,1640,2212,2953,3333,3333,3333,3077,2688],"def":[0.675,0.667,0.647,0.629,0.614,0.607,0.606,0.607,0.606,0.608,0.61],"cov":[0.14,0.162,0.203,0.24,0.272,0.291,0.295,0.295,0.296,0.292,0.286]},"unseal":{"label":"取消密封","cases":[667,900,1182,1593,1832,2386,2140,2602,2191,2586,2168],"def":[0.219,0.251,0.235,0.257,0.248,0.265,0.254,0.267,0.256,0.267,0.256],"cov":[0.466,0.581,0.689,0.805,0.855,0.93,0.902,0.949,0.908,0.947,0.906]},"resist":{"label":"平台抵抗","cases":[667,900,1215,1640,2204,2822,3013,2823,2562,2307,2058],"def":[0.675,0.667,0.647,0.629,0.614,0.609,0.607,0.608,0.611,0.614,0.619],"cov":[0.14,0.162,0.203,0.24,0.273,0.289,0.291,0.289,0.283,0.276,0.266]},"both":{"label":"两者叠加","cases":[667,900,1168,1572,1593,2002,1606,1811,1384,1480,1111],"def":[0.219,0.251,0.235,0.257,0.244,0.262,0.245,0.26,0.242,0.255,0.238],"cov":[0.466,0.581,0.684,0.8,0.805,0.883,0.807,0.85,0.752,0.777,0.664]}};
+    var SNAP = {"s":"001000000000110001000000000100011001000000100000000100000000000000000000000000011000000001010000000000000000000001001000010010000000100100001000100000002000000000000000100000000000000000000000000000000000100000000000000000000000000000000000000100001100000010000010000000000000000000000000000100000010002000001000000000001000010001001000001000011000100000000000000000000001000000000000000000000000000000000000000000000000000200200000000000000000000000100000000001000000000000010000000000020101000001000000000000000000000000000001000000000000000000001000000100000000000000010000000000000000000000000001000100000000100000000000010001000000000000000000000000000000110000000000000100102001000000000000000000000000001100000010000011000000000010010000000000001000000000000000001001010100000001010000000000000000000000011000000000010001000000010100000000000000000000000000000010000010000000000000001000000020100001010100010010000000000000000000000000000000000000000000000000000000000001000000200101000000000000010000010000000010001000000000210000000000000101000000000000001110000100000100000010000000100000000000020000000000001000000000000100000000000010000000101110000000000200000000000000000000000010000000000000000000001000000000000000000010000001000002102000000000000000000000000100000000000002000000000000000000000000000000000020100000000000010000000000000000001010000100010200000000011000000001000000000000000000001000110000000000000010000000000010000010200000000000000000100000000000000000000001010000000001100010000000000100000000000000011000000000000000000001000000000000000000000000000000010000010000000001000000000100000000000000000010000000000010000100000000000011000000000000010000000000010000001000000000001000000000000010010000000000010000000020000000000010000000000001000110000000100011000000100000100100000001000100000001001000000000000000010000000000000000000100000000001000000001010110100000000000000000000002000000100000012000001010000010010000001021000000011000000100010000000010000000000010000010001010000000000001000000000000000000000010010000000000000000000000000000000000000000100000000000001100100000100000010000100100100010000000010000100000001000000000020000000000000000000000000000000001000100100000000000000000000000000000000000000000000000000000001000000002000000000000001000000000010000000000000000000000000000000201000000110000000000000000110000000100100001000000000000000000","u":"00000100100011000000000010000100111000002100000000010001001011000000010001010001001000000201101010000000010000000000100010000110110101100000100100010001110100011010010110000000101000100000000010010101000111000000001001000100000000000002100100010000011010000100000001010000000011110111001100110000001100011100100000000100101101210000010000101011001011000010000200110000000011000000000000100000000100000000100010000001100010001120000200000000011000011010110011000011020000100000201020000000002100001100011101000000011100000110100000100002000000000000100000000000000001011001000001000101010100000110000000110000000000000001110200000001010001001000110001111000000001000200001001011200201000000000000000000100000101000000001010101010001100010000001010100001020100000001200000010101010002010100000202000000110010100000001000000010000100100010101000001000000011000000000000110110000000001001010100010000000000000100000100001000100000000000110010000110000001110000110010000001101000110001000000110100000010000112000001001001000000110020010100100000101000000100010101101000001100010000010010100000000010010111000000200000001000100010000101010010101000100001012110101101011000000000000101012200000001001100000200002010100000100010020001001020002000101020100020000001100000101100001100010001000001000001001000000000000000010000000000000101000000000201100000101000000200110000011100110000000000000101110010001010000010010000010010001101000000000010010000001000000000010000000111002000012010100000000010110110011000000010001000100010010100100100100110110001201200010000100100001000110020000100000100000001011000000000000010100010110111000000000001001010000000001000011001100100001011001001012001000100100010000200010000010000011000100001001002100001121100011000000010000001000100010010000001000100100010010000000200011000100001100000000100011000100110000100010011101111000000001001000001110000000000000011001102000000010000010100001001011100000010000101100001000010000000100010001110000001010000000101000000001001000010000000000000002011000100000000001000110000100010001000020010000000000010001000100000000001000000100100000110000010020000000101000010000101001000010011001001101000000100000000100110100000000100010000000100000001000110000200000000100000010021200000000000000000011000000100010000010000100000110010000000000000110000010000101100210001001010000000000000010000001000000101011201110011000001010100201000100"};
+
+    var COLORS = {};
+    function readColors() {
+      var cs = getComputedStyle(root);
+      COLORS.muted = cs.getPropertyValue('--muted').trim() || '#ddd';
+      COLORS.fg = cs.getPropertyValue('--foreground').trim() || '#222';
+      COLORS.border = cs.getPropertyValue('--border').trim() || '#ccc';
+      COLORS.s1 = cs.getPropertyValue('--viz-series-1').trim() || '#c66';
+      COLORS.s2 = cs.getPropertyValue('--viz-series-2').trim() || '#3a7';
+      COLORS.bg = cs.getPropertyValue('--card').trim() || 'transparent';
+    }
+    readColors();
+
+    var current = 'base';
+    var year = 5;
+    var gridMode = 'seal';
+
+    function fmt(n) { return Number(n).toLocaleString('en-US'); }
+
+    function drawCases() {
+      var el = document.getElementById('sad-chart-cases');
+      el.innerHTML = '';
+      var w = Math.max(320, el.getBoundingClientRect().width || 720);
+      var h = 230;
+      var m = { t: 16, r: 18, b: 34, l: 58 };
+      var iw = w - m.l - m.r, ih = h - m.t - m.b;
+      var svg = d3.select(el).append('svg').attr('viewBox', '0 0 ' + w + ' ' + h)
+        .attr('width', w).attr('height', h).attr('role', 'img')
+        .attr('aria-label', '年度立案数：当前情景与基准情景');
+      var g = svg.append('g').attr('transform', 'translate(' + m.l + ',' + m.t + ')');
+      var x = d3.scaleLinear().domain([0, 10]).range([0, iw]);
+      var maxY = d3.max([d3.max(DATA.base.cases), d3.max(DATA[current].cases)]) * 1.08;
+      var y = d3.scaleLinear().domain([0, maxY]).nice().range([ih, 0]);
+
+      g.append('rect').attr('data-chart-frame', '').attr('x', 0).attr('y', 0)
+        .attr('width', iw).attr('height', ih).attr('fill', 'none')
+        .attr('stroke', COLORS.border).attr('stroke-width', 1);
+
+      g.append('rect').attr('x', x(5.5)).attr('y', 0)
+        .attr('width', x(10) - x(5.5)).attr('height', ih)
+        .attr('fill', COLORS.muted).attr('opacity', 0.35);
+      g.append('text').attr('x', (x(5.5) + x(10)) / 2).attr('y', 13)
+        .attr('text-anchor', 'middle').attr('fill', COLORS.fg).attr('font-size', 11)
+        .text('推演期（非预测）');
+
+      y.ticks(4).forEach(function (t) {
+        g.append('line').attr('x1', 0).attr('x2', iw).attr('y1', y(t)).attr('y2', y(t))
+          .attr('stroke', COLORS.border).attr('stroke-width', 0.6).attr('opacity', 0.5);
+        g.append('text').attr('x', -10).attr('y', y(t)).attr('dy', '0.32em')
+          .attr('text-anchor', 'end').attr('fill', COLORS.fg).attr('font-size', 12).text(fmt(t));
+      });
+      [0, 2, 5, 8, 10].forEach(function (i) {
+        g.append('text').attr('x', x(i)).attr('y', ih + 22).attr('text-anchor', 'middle')
+          .attr('fill', COLORS.fg).attr('font-size', 12).text(2020 + i);
+      });
+
+      var line = d3.line().x(function (d, i) { return x(i); }).y(function (d) { return y(d); });
+      g.append('path').datum(DATA.base.cases).attr('d', line)
+        .attr('fill', 'none').attr('stroke', COLORS.muted).attr('stroke-width', 1.6)
+        .attr('stroke-dasharray', '4 3');
+      g.append('path').datum(DATA[current].cases).attr('d', line)
+        .attr('fill', 'none').attr('stroke', COLORS.s1).attr('stroke-width', 2.2);
+
+      g.append('line').attr('x1', x(year)).attr('x2', x(year)).attr('y1', 0).attr('y2', ih)
+        .attr('stroke', COLORS.fg).attr('stroke-width', 1).attr('stroke-dasharray', '3 3').attr('opacity', 0.6);
+
+      DATA[current].cases.forEach(function (v, i) {
+        g.append('circle').attr('cx', x(i)).attr('cy', y(v)).attr('r', 13).attr('fill', 'transparent')
+          .attr('data-tooltip', (2020 + i) + '：' + fmt(v) + ' 件');
+        g.append('circle').attr('cx', x(i)).attr('cy', y(v)).attr('r', 2.8)
+          .attr('fill', COLORS.s1);
+      });
+
+      g.append('text').attr('x', iw / 2).attr('y', ih + 34).attr('text-anchor', 'middle')
+        .attr('fill', COLORS.fg).attr('font-size', 12).text('年份');
+      g.append('text').attr('transform', 'rotate(-90)').attr('x', -ih / 2).attr('y', -42)
+        .attr('text-anchor', 'middle').attr('fill', COLORS.fg).attr('font-size', 12).text('立案数（件）');
+    }
+
+    function drawRates() {
+      var el = document.getElementById('sad-chart-rates');
+      el.innerHTML = '';
+      var w = Math.max(300, el.getBoundingClientRect().width || 420);
+      var h = 260;
+      var m = { t: 18, r: 44, b: 38, l: 46 };
+      var iw = w - m.l - m.r, ih = h - m.t - m.b;
+      var svg = d3.select(el).append('svg').attr('viewBox', '0 0 ' + w + ' ' + h)
+        .attr('width', w).attr('height', h).attr('role', 'img')
+        .attr('aria-label', '默认判决率与有效协调率');
+      var g = svg.append('g').attr('transform', 'translate(' + m.l + ',' + m.t + ')');
+      var x = d3.scaleLinear().domain([0, 10]).range([0, iw]);
+      var y = d3.scaleLinear().domain([0, 1]).range([ih, 0]);
+
+      g.append('rect').attr('data-chart-frame', '').attr('x', 0).attr('y', 0)
+        .attr('width', iw).attr('height', ih).attr('fill', 'none')
+        .attr('stroke', COLORS.border).attr('stroke-width', 1);
+
+      g.append('rect').attr('x', x(5.5)).attr('y', 0)
+        .attr('width', x(10) - x(5.5)).attr('height', ih)
+        .attr('fill', COLORS.muted).attr('opacity', 0.35);
+
+      y.ticks(4).forEach(function (t) {
+        g.append('line').attr('x1', 0).attr('x2', iw).attr('y1', y(t)).attr('y2', y(t))
+          .attr('stroke', COLORS.border).attr('stroke-width', 0.6).attr('opacity', 0.5);
+        g.append('text').attr('x', -8).attr('y', y(t)).attr('dy', '0.32em')
+          .attr('text-anchor', 'end').attr('fill', COLORS.fg).attr('font-size', 12)
+          .text(Math.round(t * 100) + '%');
+      });
+      [0, 5, 10].forEach(function (i) {
+        g.append('text').attr('x', x(i)).attr('y', ih + 22).attr('text-anchor', 'middle')
+          .attr('fill', COLORS.fg).attr('font-size', 12).text(2020 + i);
+      });
+
+      var line = d3.line().x(function (d, i) { return x(i); }).y(function (d) { return y(d); });
+      g.append('path').datum(DATA[current].def).attr('d', line)
+        .attr('fill', 'none').attr('stroke', COLORS.s1).attr('stroke-width', 2.2);
+      g.append('path').datum(DATA[current].cov).attr('d', line)
+        .attr('fill', 'none').attr('stroke', COLORS.s2).attr('stroke-width', 2.2);
+
+      g.append('text').attr('x', x(10) + 4).attr('y', y(DATA[current].def[10])).attr('dy', '0.32em')
+        .attr('fill', COLORS.fg).attr('font-size', 11).text('默认');
+      g.append('text').attr('x', x(10) + 4).attr('y', y(DATA[current].cov[10])).attr('dy', '0.32em')
+        .attr('fill', COLORS.fg).attr('font-size', 11).text('协调');
+
+      g.append('text').attr('x', iw / 2).attr('y', ih + 34).attr('text-anchor', 'middle')
+        .attr('fill', COLORS.fg).attr('font-size', 12).text('年份');
+    }
+
+    function drawGrid() {
+      var cv = document.getElementById('sad-grid');
+      var rect = cv.getBoundingClientRect();
+      var dpr = window.devicePixelRatio || 1;
+      var w = Math.max(300, rect.width || 420);
+      var h = 260;
+      cv.width = Math.round(w * dpr);
+      cv.height = Math.round(h * dpr);
+      var ctx = cv.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+
+      var cols = 60, rows = 40;
+      var cw = w / cols, ch = h / rows;
+      var s = (gridMode === 'seal' ? SNAP.s : SNAP.u).slice(0, 2400);
+      var isUnsealed = gridMode === 'unseal';
+
+      if (isUnsealed) {
+        ctx.strokeStyle = COLORS.s2;
+        ctx.globalAlpha = 0.22;
+        ctx.lineWidth = 1;
+        for (var i = 0; i < s.length; i++) {
+          if (s[i] === '0') continue;
+          var c = i % cols, r = Math.floor(i / cols);
+          var n1 = i + 1, n2 = i + cols;
+          if (c + 1 < cols && n1 < s.length && s[n1] !== '0') {
+            ctx.beginPath(); ctx.moveTo(c * cw + cw / 2, r * ch + ch / 2);
+            ctx.lineTo((c + 1) * cw + cw / 2, r * ch + ch / 2); ctx.stroke();
+          }
+          if (n2 < s.length && s[n2] !== '0') {
+            ctx.beginPath(); ctx.moveTo(c * cw + cw / 2, r * ch + ch / 2);
+            ctx.lineTo(c * cw + cw / 2, (r + 1) * ch + ch / 2); ctx.stroke();
+          }
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      for (var j = 0; j < s.length; j++) {
+        var st = s[j];
+        if (st === '0') continue;
+        var cc = j % cols, rr = Math.floor(j / cols);
+        ctx.fillStyle = st === '2' ? COLORS.s2 : COLORS.s1;
+        ctx.beginPath();
+        ctx.arc(cc * cw + cw / 2, rr * ch + ch / 2, Math.max(1.6, cw * 0.28), 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function update() {
+      var d = DATA[current];
+      document.getElementById('sad-cases').textContent = fmt(d.cases[year]);
+      document.getElementById('sad-def').textContent = Math.round(d.def[year] * 100) + '%';
+      document.getElementById('sad-coord').textContent = Math.round(d.cov[year] * 100) + '%';
+      document.getElementById('sad-total').textContent = fmt(d3.sum(d.cases));
+      document.getElementById('sad-year-label').textContent =
+        (2020 + year) + (year <= 5 ? '（第' + (year + 1) + '期）' : '（推演期）');
+      document.getElementById('sad-grid-seal').setAttribute('aria-pressed', gridMode === 'seal' ? 'true' : 'false');
+      document.getElementById('sad-grid-unseal').setAttribute('aria-pressed', gridMode === 'unseal' ? 'true' : 'false');
+      drawCases();
+      drawRates();
+      drawGrid();
+    }
+
+    Array.prototype.forEach.call(root.querySelectorAll('#sad-scen [data-s]'), function (btn) {
+      btn.addEventListener('click', function () {
+        current = btn.getAttribute('data-s');
+        Array.prototype.forEach.call(root.querySelectorAll('#sad-scen [data-s]'), function (b) {
+          b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+        });
+        update();
+      });
+    });
+    document.getElementById('sad-year').addEventListener('input', function (e) {
+      year = parseInt(e.target.value, 10);
+      update();
+    });
+    document.getElementById('sad-grid-seal').addEventListener('click', function () {
+      gridMode = 'seal'; update();
+    });
+    document.getElementById('sad-grid-unseal').addEventListener('click', function () {
+      gridMode = 'unseal'; update();
+    });
+
+    var ro = new ResizeObserver(function () {
+      clearTimeout(ro._t);
+      ro._t = setTimeout(update, 120);
+    });
+    ro.observe(root);
+
+    update();
+  })();
+  </script>
+</div>
