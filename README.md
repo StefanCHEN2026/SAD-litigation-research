@@ -75,6 +75,10 @@ The full ABM runs 400,000 persistent sellers over 11 periods and may take severa
 - **Damages caps are not the main lever.** Lowering expected damages from USD 150,000 to USD 20,000 reduces cases by only about 4%; recovery is constrained by frozen account balances.
 - **The model is a mechanism illustration, not a forecast.** An out-of-sample test calibrated on 2020–2023 under-predicts 2024–2025 by 21.9% and 39.5%.
 
+### Code terminology
+
+The code retains the earlier scenario labels `平台自适应抵抗` and `平台抵抗`. In the paper these correspond to **平台限缩冻结账户范围** (the platform narrows the scope of the frozen account). In the code, `resistance = 1 - freeze_ratio`: 0 means freeze the whole account; 1 means freeze nothing.
+
 ## 6. Citation
 
 If you use this repository, please cite the paper and the repository. See `CITATION.cff`.
